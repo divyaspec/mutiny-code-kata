@@ -25,21 +25,21 @@ public class UniKata {
 
     @Test
     public void supplier(){
-        Supplier<Integer> f = null;
+        Supplier<Integer> f = () -> Integer.valueOf(42);
 
         assertThat(f.get(), is(42));
     }
 
     @Test
     public void function(){
-        Function<Integer, Integer> square = null;
+        Function<Integer, Integer> square = t -> t * t;
 
         assertThat(square.apply(4), is(16));
     }
 
     @Test
     public void biFunction(){
-        BiFunction<Integer, Integer, Integer> add = null;
+        BiFunction<Integer, Integer, Integer> add = (a, b) -> a + b;
 
         assertThat(add.apply(2, 3), is(5));
     }
@@ -47,16 +47,17 @@ public class UniKata {
     @Test
     public void consumer(){
         Integer received = null;
-        Consumer<Integer> callback = null;
+        AtomicInteger r = new AtomicInteger();
+        Consumer<Integer> callback = r::set;
 
         callback.accept(2);
-
+        received = r.get();
         assertThat(received, is(2));
     }
 
     @Test
     public void constant_can_be_lifted_to_uni(){
-        Uni<Integer> res = null;
+        Uni<Integer> res = Uni.createFrom().item(() -> Integer.valueOf(3));
 
         eventually(res, is(3));
     }
@@ -66,7 +67,7 @@ public class UniKata {
         Uni<Integer> x = pure(3);
         Uni<String> y = pure("4");
 
-        Uni<Tuple2<Integer, String>> xy = null;
+        Uni<Tuple2<Integer, String>> xy = Uni.combine().all().unis(x, y).asTuple();
 
         eventually(xy, is(Tuple2.of(3, "4")));
     }
@@ -92,7 +93,7 @@ public class UniKata {
     public void uni_can_retry(){
         AtomicInteger attempts = new AtomicInteger(0);
         Uni<String> http_get = Uni.createFrom().item(() -> (attempts.incrementAndGet() < 3) ? error("Boom!") : SUCCESFULL_RESULT);
-
+        http_get.onFailure().retry().atMost(2).subscribeAsCompletionStage().complete(SUCCESFULL_RESULT);
         eventually( http_get, is(SUCCESFULL_RESULT));
     }
 
