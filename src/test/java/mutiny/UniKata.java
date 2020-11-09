@@ -1,5 +1,6 @@
 package mutiny;
 
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
 import org.hamcrest.MatcherAssert;
@@ -7,6 +8,10 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -16,6 +21,7 @@ import java.util.function.Supplier;
 import static mutiny.predef.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
 
 public class UniKata {
 
@@ -74,7 +80,11 @@ public class UniKata {
 
     @Test
     public void can_run_one_uni_multiple_times_and_get_different_results(){
-        Uni<Integer> random = null;
+        Random r = new Random();
+        Uni<Integer> random = Uni.createFrom().emitter(e -> {
+            e.complete(r.nextInt());
+            e.complete(r.nextInt());
+        });
 
         Uni<Tuple2<Integer, Integer>> xy = Uni.combine().all().unis(random, random).asTuple();
 
@@ -85,6 +95,7 @@ public class UniKata {
     public void uni_can_recover_on_failure(){
         Uni<Integer> random = Uni.createFrom().item(() -> error("Boom!"));
         final int FALLBACK = -1;
+        random.onFailure().recoverWithItem(FALLBACK);
 
         eventually( random, is(-1) );
     }
@@ -97,11 +108,33 @@ public class UniKata {
         eventually( http_get, is(SUCCESFULL_RESULT));
     }
 
-    @Test public void uni_value_can_be_mapped(){ }
+    @Test public void uni_value_can_be_mapped(){
+        int item1 = new Random().nextInt();
+        int item2 = new Random().nextInt();
+        Multi<Integer> multi = Multi.createFrom().emitter(e -> {
+            e.emit(item1);
+            e.emit(item2);
+        });
+        //multi to uni tansform
+        Uni<List<Integer>> list = multi.transform().byTakingFirstItems(2).collectItems().asList();
+        eventually(Duration.ofSeconds(1), list.map(should(is(list(item1, item2)))));
 
-    @Test public void uni_can_be_chained_with_uni(){ }
+    }
 
-    @Test public void uni_can_be_chained_with_uni_ignoring_the_output(){ }
+    @Test public void uni_can_be_chained_with_uni(){
+        int r = new Random().nextInt();
+        Uni<Integer> uni = Uni.createFrom().item(() -> r + 1);
+        Uni<Integer> chain = uni.chain(i -> Uni.createFrom().item(i + 1));
+        eventually(chain, is(r + 2));
+    }
+
+    @Test public void uni_can_be_chained_with_uni_ignoring_the_output(){
+        int r = new Random().nextInt();
+        Uni<Integer> uni = Uni.createFrom().item(() -> r + 1);
+        Uni<Integer> secondUni = uni.onItem().transformToUni(ignored -> Uni.createFrom().item(r));
+        eventually(secondUni, is(r));
+
+    }
 
 
 }
