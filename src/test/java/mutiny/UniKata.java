@@ -3,9 +3,6 @@ package mutiny;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -109,6 +106,25 @@ public class UniKata {
     }
 
     @Test public void uni_value_can_be_mapped(){
+        Double RADIUS = 10d;
+        Uni<Double> pi = computePiOnGPU();
+        Uni<Double> area = null;
+
+        eventually(area, is(3141.5));
+    }
+
+    @Test public void uni_can_be_chained_with_uni(){
+        Uni<Double> RADIUS = parse("10");
+        Uni<Double> pi = computePiOnGPU();
+        Uni<Double> area = null;
+
+        eventually(area, is(3141.5));
+    }
+
+    private Uni<Double> parse(String value) {
+        return Uni.createFrom().item( () -> Double.parseDouble(value));
+    }
+    @Test public void uni_value_can_be_mapped(){
         int item1 = new Random().nextInt();
         int item2 = new Random().nextInt();
         Multi<Integer> multi = Multi.createFrom().emitter(e -> {
@@ -127,6 +143,11 @@ public class UniKata {
         Uni<Integer> chain = uni.chain(i -> Uni.createFrom().item(i + 1));
         eventually(chain, is(r + 2));
     }
+    private Uni<Double> computePiOnGPU() {
+        return pure(3.1415);
+    }
+
+
 
     @Test public void uni_can_be_chained_with_uni_ignoring_the_output(){
         int r = new Random().nextInt();
@@ -135,7 +156,6 @@ public class UniKata {
         eventually(secondUni, is(r));
 
     }
-
 
 }
 
