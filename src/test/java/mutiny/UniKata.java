@@ -5,6 +5,7 @@ import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
 import org.junit.jupiter.api.Test;
 
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.List;
 import java.util.Random;
@@ -90,9 +91,10 @@ public class UniKata {
 
     @Test
     public void uni_can_recover_on_failure(){
-        Uni<Integer> random = Uni.createFrom().item(() -> error("Boom!"));
         final int FALLBACK = -1;
-        random.onFailure().recoverWithItem(FALLBACK);
+        Uni<Integer> random = Uni.createFrom()
+                .item(() -> predef.<Integer>error("Boom!"))
+                .onFailure().recoverWithItem(FALLBACK);
 
         eventually( random, is(-1) );
     }
@@ -108,7 +110,7 @@ public class UniKata {
     @Test public void uni_value_can_be_mapped(){
         Double RADIUS = 10d;
         Uni<Double> pi = computePiOnGPU();
-        Uni<Double> area = null;
+        Uni<Double> area = pi.map(f -> roundAvoid(RADIUS * RADIUS * f * 10, 1));
 
         eventually(area, is(3141.5));
     }
@@ -116,7 +118,7 @@ public class UniKata {
     @Test public void uni_can_be_chained_with_uni(){
         Uni<Double> RADIUS = parse("10");
         Uni<Double> pi = computePiOnGPU();
-        Uni<Double> area = null;
+        Uni<Double> area = pi.chain(x -> RADIUS.onItem().invoke(r -> pi.map(p -> roundAvoid(r * p * 10, 1))));
 
         eventually(area, is(3141.5));
     }
@@ -124,30 +126,6 @@ public class UniKata {
     private Uni<Double> parse(String value) {
         return Uni.createFrom().item( () -> Double.parseDouble(value));
     }
-    @Test public void uni_value_can_be_mapped(){
-        int item1 = new Random().nextInt();
-        int item2 = new Random().nextInt();
-        Multi<Integer> multi = Multi.createFrom().emitter(e -> {
-            e.emit(item1);
-            e.emit(item2);
-        });
-        //multi to uni tansform
-        Uni<List<Integer>> list = multi.transform().byTakingFirstItems(2).collectItems().asList();
-        eventually(Duration.ofSeconds(1), list.map(should(is(list(item1, item2)))));
-
-    }
-
-    @Test public void uni_can_be_chained_with_uni(){
-        int r = new Random().nextInt();
-        Uni<Integer> uni = Uni.createFrom().item(() -> r + 1);
-        Uni<Integer> chain = uni.chain(i -> Uni.createFrom().item(i + 1));
-        eventually(chain, is(r + 2));
-    }
-    private Uni<Double> computePiOnGPU() {
-        return pure(3.1415);
-    }
-
-
 
     @Test public void uni_can_be_chained_with_uni_ignoring_the_output(){
         int r = new Random().nextInt();
@@ -155,6 +133,15 @@ public class UniKata {
         Uni<Integer> secondUni = uni.onItem().transformToUni(ignored -> Uni.createFrom().item(r));
         eventually(secondUni, is(r));
 
+    }
+
+    private Uni<Double> computePiOnGPU() {
+        return pure(3.1415);
+    }
+
+    public static double roundAvoid(double value, int places) {
+        double scale = Math.pow(10, places);
+        return Math.round(value * scale) / scale;
     }
 
 }

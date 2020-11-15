@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class predef {
     public static <T> T error(String msg){
-        throw new RuntimeException(msg);
+         throw new RuntimeException(msg);
     }
 
     public static <T> Uni<T> pure(T x) {
