@@ -118,7 +118,8 @@ public class UniKata {
     @Test public void uni_can_be_chained_with_uni(){
         Uni<Double> RADIUS = parse("10");
         Uni<Double> pi = computePiOnGPU();
-        Uni<Double> area = pi.chain(x -> RADIUS.onItem().invoke(r -> pi.map(p -> roundAvoid(r * p * 10, 1))));
+        Uni<Double> area = RADIUS.chain(item ->
+                pi.map(x -> roundAvoid(x.doubleValue()*item*item*item, 1)));
 
         eventually(area, is(3141.5));
     }
