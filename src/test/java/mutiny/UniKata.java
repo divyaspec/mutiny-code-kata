@@ -1,15 +1,10 @@
 package mutiny;
 
-import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.tuples.Tuple2;
 import org.junit.jupiter.api.Test;
 
-import java.math.RoundingMode;
-import java.time.Duration;
-import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -19,7 +14,6 @@ import java.util.function.Supplier;
 import static mutiny.predef.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
 
 public class UniKata {
 
