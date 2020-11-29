@@ -96,8 +96,9 @@ public class UniKata {
     @Test
     public void uni_can_retry(){
         AtomicInteger attempts = new AtomicInteger(0);
-        Uni<String> http_get = Uni.createFrom().item(() -> (attempts.incrementAndGet() < 3) ? error("Boom!") : SUCCESFULL_RESULT);
-        http_get.onFailure().retry().atMost(2).subscribeAsCompletionStage().complete(SUCCESFULL_RESULT);
+        Uni<String> http_get = Uni.createFrom().item(() -> (attempts.incrementAndGet() < 3)
+                ? error("Boom!") : SUCCESFULL_RESULT).onFailure().recoverWithItem(SUCCESFULL_RESULT);
+        http_get.onFailure().retry().atMost(3);
         eventually( http_get, is(SUCCESFULL_RESULT));
     }
 
