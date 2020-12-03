@@ -17,6 +17,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public final class predef {
+
+    public static <T> Uni<T> uni(Supplier<T> t) {
+        return Uni.createFrom().item(t);
+    }
+
+    public static String fmt (String s, Object... it){
+        return String.format(s, it);
+    }
+
+    public static RuntimeException SystemError (String msg, Object... args) {
+        return new SystemError(fmt(msg, args));
+    }
+
+    public static RuntimeException SystemError (Throwable cause, String msg, Object... args) {
+        return SystemError(fmt(msg, args), cause);
+    }
+
     public static <T> T error(String msg){
          throw new RuntimeException(msg);
     }
@@ -61,4 +78,17 @@ public final class predef {
     }
 
     private static final ForkJoinPool pool = new ForkJoinPool(3);
+
+    static class SystemError extends RuntimeException {
+        public SystemError(String message, Throwable cause) {
+            super(message, cause);
+        }
+        public SystemError(Throwable cause) {
+            super(cause);
+        }
+        public SystemError(String message) {
+            super(message);
+        }
+    }
+
 }
