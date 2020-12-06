@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.file.StandardOpenOption.READ;
+import static mutiny.io.Util.readUntil;
 import static mutiny.predef.SystemError;
 import static mutiny.predef.uni;
 
@@ -38,7 +39,7 @@ public final class io {
         });
     }
 
-    public static Uni<byte[]> read(File f) {
+    public static Uni<byte[]> readFile(File f) {
         return read(f.toPath());
     }
 
@@ -50,6 +51,14 @@ public final class io {
                 throw SystemError(e, "File cannot be read [%s]", path);
             }
         }).runSubscriptionOn(blockingIOPool);
+    }
+
+    public static Uni<String> readString (File f) {
+        return readFile(f).map(String::new);
+    }
+
+    public static String readLine(InputStream in) throws IOException {
+        return readUntil(in, '\n');
     }
 
     @SuppressWarnings("unchecked")
