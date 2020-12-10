@@ -122,22 +122,6 @@ public final class io {
             return readUntil(in, '\n');
         }
 
-        public static String convertCharToString(char c) throws IOException {
-            StringBuilder textBuilder = new StringBuilder();
-            if ( (int) c != -1) {
-                textBuilder.append((char) c);
-            }
-            return textBuilder.toString();
-        }
-
-        public static int reader(InputStream in) throws IOException {
-            try (Reader reader = new BufferedReader(new InputStreamReader
-                    (in, Charset.forName(StandardCharsets.UTF_8.name())))) {
-                int c = reader.read();
-                return c;
-            }
-        }
-
         public static String readUntil(InputStream in, char delimiter) throws IOException {
             StringBuffer bf = new StringBuffer();
             int r = in.read();
@@ -154,7 +138,7 @@ public final class io {
             return Integer.valueOf(readUntil(in, delimiter));
         }
 
-        static String readString(Integer length, InputStream in) throws IOException {
+        public static String readString(Integer length, InputStream in) throws IOException {
             StringBuilder sb = new StringBuilder();
             int c;
             do {
@@ -162,7 +146,7 @@ public final class io {
                 if (c != -1) {
                     sb.append((char) c);
                 }
-            } while (sb.length() < length);
+            } while (sb.length() < length && c != '\n');
             return sb.toString();
         }
 
