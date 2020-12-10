@@ -15,12 +15,16 @@ import static mutiny.io.readFile;
 public class PasspolicyTest {
     public  int totalCount = 0;
 
+    /**
+     *
+     * there is a problem with this test, its not shutting down after processing all bytes stream
+     */
+
     @Test
     public void shouldReadFile() throws ExecutionException, InterruptedException, IOException {
         File file = new File(getFilePath());
         Uni<byte[]> bytes = readFile(file);
         ByteArrayInputStream in = new ByteArrayInputStream(bytes.subscribe().asCompletionStage().get());
-        int c;
         while (in.available() > 0) {
             String s = readUntil(in, '\n');
             String[] splits = s.split(":");
