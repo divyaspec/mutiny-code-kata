@@ -3,13 +3,12 @@ package mutiny;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.Buffer;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -121,6 +120,22 @@ public final class io {
 
         public static String readLine(InputStream in) throws IOException {
             return readUntil(in, '\n');
+        }
+
+        public static String convertCharToString(char c) throws IOException {
+            StringBuilder textBuilder = new StringBuilder();
+            if ( (int) c != -1) {
+                textBuilder.append((char) c);
+            }
+            return textBuilder.toString();
+        }
+
+        public static int reader(InputStream in) throws IOException {
+            try (Reader reader = new BufferedReader(new InputStreamReader
+                    (in, Charset.forName(StandardCharsets.UTF_8.name())))) {
+                int c = reader.read();
+                return c;
+            }
         }
 
         public static String readUntil(InputStream in, char delimiter) throws IOException {

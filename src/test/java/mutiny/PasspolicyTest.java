@@ -20,23 +20,28 @@ public class PasspolicyTest {
         File file = new File(getFilePath());
         Uni<byte[]> bytes = readFile(file);
         ByteArrayInputStream in = new ByteArrayInputStream(bytes.subscribe().asCompletionStage().get());
-        String s = readUntil(in, '\n');
-        String[] splits = s.split(":");
-        String policy = splits[0];
-        String[] policySplits = policy.split(" ");
-        Arrays.stream(policySplits).forEach(System.out::println);
+        int c;
+        while (in.available() > 0) {
+            String s = readUntil(in, '\n');
+            String[] splits = s.split(":");
+            String policy = splits[0];
+            String[] policySplits = policy.split(" ");
+            Arrays.stream(policySplits).forEach(System.out::println);
 
-        String s1 = policySplits[0];
-        String[] counts = s1.split("-");
+            String s1 = policySplits[0];
+            String[] counts = s1.split("-");
+            getValidPwdCounts(splits[1], policySplits[1].charAt(0), counts);
+        }
+    }
+
+    private void getValidPwdCounts(String pwd, char ch, String[] counts) {
         int min = Integer.parseInt(counts[0]);
         int max = Integer.parseInt(counts[1]);
-        char ch = policySplits[1].charAt(0);
         //if s2 in the pwd. If in there then how many times from S1
-        String pwd = splits[1];
         int count = getCount(ch, pwd, 0);
         if (count >= min && count <= max) {
-           totalCount++;
-           System.out.println("printing the total valid passwords = " + totalCount);
+            totalCount++;
+            System.out.println("printing the total valid passwords = " + totalCount);
         }
     }
 
