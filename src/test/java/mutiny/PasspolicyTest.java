@@ -4,11 +4,9 @@ import io.smallrye.mutiny.Uni;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
-import static mutiny.io.Util.readString;
 import static mutiny.io.readFile;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
